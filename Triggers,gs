@@ -1,0 +1,303 @@
+/**
+ * ============================================================================
+ * WORKSPACE AUTOMATION - TURING IA
+ * Archivo: Triggers.gs
+ * ============================================================================
+ * 
+ * Triggers automáticos y funciones de prueba.
+ * 
+ * Autor: José Enrique Guerrero Pérez
+ * Fecha: Enero 2026
+ * ============================================================================
+ */
+
+// ============================================================================
+// TRIGGER: EDICIÓN DE HOJA
+// ============================================================================
+
+/**
+ * Se ejecuta automáticamente al editar el Spreadsheet.
+ * Configurar como trigger: onEdit → Al editar
+ */
+function onEdit(e) {
+  try {
+    const sheetName = e.range.getSheet().getName();
+
+    if (sheetName === 'Usuarios') {
+      handleUserEdit(e);
+    }
+    
+  } catch (error) {
+    Logger.log('Error en onEdit: ' + error.message);
+    logEvent({
+      type: 'ERROR',
+      user: 'Sistema',
+      details: 'Error en trigger: ' + error.message,
+      status: 'ERROR'
+    });
+  }
+}
+
+/**
+ * Maneja cambios en la hoja Usuarios.
+ */
+function handleUserEdit(e) {
+  const row = e.range.getRow();
+  if (row === 1) return; // Ignorar encabezados
+  
+  const sheet = e.range.getSheet();
+  const col = e.range.getColumn();
+  
+  // Obtener toda la fila del usuario
+  const userData = sheet.getRange(row, 1, 1, 7).getValues()[0];
+  
+  const user = {
+    name: userData[0] ? userData[0].toString().trim() : '',
+    email: userData[1] ? userData[1].toString().trim() : '',
+    role: userData[2] ? userData[2].toString().trim() : '',
+    group: userData[3] ? userData[3].toString().trim() : '',
+    active: userData[4] === true || userData[4] === 'TRUE' || userData[4] === 'true',
+    dateRegistered: userData[5] || null,
+    lastAccess: userData[6] || null
+  };
+  
+  // ===================================================================
+  // NUEVO USUARIO: SOLO se ejecuta cuando la fila está COMPLETA
+  // ===================================================================
+  if (col >= 1 && col <= 5) {
+    const filaCompleta = user.name && user.email && user.role && user.group;
+    const esNuevo = !user.dateRegistered || user.dateRegistered === '';
+    
+    if (filaCompleta && esNuevo) {
+      Logger.log('✓ Fila completa detectada - Procesando nuevo usuario');
+      processNewUser(user, row);
+      return;
+    }
+  }
+  
+  // Cambio de estado activo
+  if (col === 5 && user.active === false) {
+    processInactiveUser(user);
+  }
+  
+  // Cambio de rol
+  if (col === 3 && user.dateRegistered) {
+    notifyRoleChange(user);
+  }
+}
+// ============================================================================
+// TRIGGER: VERIFICACIÓN DIARIA
+// ============================================================================
+
+/**
+ * Verifica usuarios inactivos y los desactiva automáticamente.
+ * Configurar como trigger: verificarUsuariosInactivos → Diario 8AM-9AM
+ */
+function verificarUsuariosInactivos() {
+  Logger.log('=== Verificación diaria iniciada ===');
+  
+  const users = getUsers();
+  Logger.log(users);
+  const usuariosInactivos = [];
+  
+  users.forEach(user => {
+    if (!user.active) return;
+    
+    const dias = getDaysSinceLastAccess(user.lastAccess);
+    
+    if (dias > 7) {
+      // Desactivar en la hoja
+      const ss = SpreadsheetApp.getActiveSpreadsheet();
+      const sheet = ss.getSheetByName('Usuarios');
+      const data = sheet.getDataRange().getValues();
+      
+      for (let i = 1; i < data.length; i++) {
+        if (data[i][0] === user.name) {
+          sheet.getRange(i + 1, 5).setValue('FALSE');
+          break;
+        }
+      }
+      
+      // Registrar
+      logEvent({
+        type: 'USUARIO_INACTIVO',
+        user: user.name,
+        details: `${dias} días sin actividad`,
+        status: 'ALERTA',
+        action: 'Desactivado automáticamente'
+      });
+      
+      usuariosInactivos.push({
+        name: user.name,
+        group: user.group,
+        days: dias
+      });
+    }
+  });
+  
+  Logger.log(`Usuarios desactivados: ${usuariosInactivos.length}`);
+  
+  // Enviar reporte si hay inactivos
+  if (usuariosInactivos.length > 0) {
+    enviarReporteInactivos(usuariosInactivos);
+  }
+  
+  Logger.log('=== Verificación completada ===');
+}
+
+// ============================================================================
+// FUNCIONES DE PRUEBA
+// ============================================================================
+
+/**
+ * PRUEBA 1: Simula agregar usuario nuevo.
+ * Ejecutar manualmente: Seleccionar función → Run
+ */
+function pruebaAgregarUsuario() {
+  Logger.log('=== PRUEBA: Agregar Usuario ===');
+  
+  const user = {
+    name: 'Carlos Test',
+    email: 'carlos.test@empresa.com',
+    role: 'Editor',
+    group: 'IT'
+  };
+  
+  processNewUser(user);
+  
+  Logger.log('✓ Prueba completada');
+  Logger.log('→ Revisar: Email recibido + Evento en Calendar');
+}
+
+/**
+ * PRUEBA 2: Simula usuario inactivo.
+ */
+function pruebaUsuarioInactivo() {
+  Logger.log('=== PRUEBA: Usuario Inactivo ===');
+  
+  const user = {
+    name: 'Luis Pérez',
+    email: 'luis.perez@empresa.com',
+    role: 'Viewer',
+    group: 'RH'
+  };
+  
+  processInactiveUser(user);
+  
+  Logger.log('✓ Prueba completada');
+  Logger.log('→ Revisar: Email de alerta recibido');
+}
+
+/**
+ * PRUEBA 3: Simula cambio de rol a Admin.
+ */
+function pruebaCambioRol() {
+  Logger.log('=== PRUEBA: Cambio de Rol ===');
+  
+  const user = {
+    name: 'Ana López',
+    email: 'ana.lopez@empresa.com',
+    role: 'Admin',
+    group: 'Finanzas'
+  };
+  
+  notifyRoleChange(user);
+  
+  Logger.log('✓ Prueba completada');
+  Logger.log('→ Revisar: Email de alerta Admin recibido');
+}
+
+/**
+ * PRUEBA 4: Ejecuta verificación diaria manualmente.
+ */
+function pruebaVerificacionDiaria() {
+  Logger.log('=== PRUEBA: Verificación Diaria ===');
+  
+  verificarUsuariosInactivos();
+  
+  Logger.log('✓ Prueba completada');
+  Logger.log('→ Revisar: Logs del sistema');
+}
+
+/**
+ * PRUEBA COMPLETA: Simula agregar nuevo usuario
+ * Ejecuta manualmente para verificar TODO el flujo
+ */
+function pruebaCompletaNuevoUsuario() {
+  Logger.log('=== PRUEBA COMPLETA: NUEVO USUARIO ===');
+  
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName('Usuarios');
+  
+  // Simular datos del nuevo usuario
+  const testUser = {
+    name: 'Pedro Ramírez',
+    email: 'pedro.ramirez@empresa.com',
+    role: 'Viewer',
+    group: 'RH',
+    active: true
+  };
+  
+  // Buscar primera fila vacía
+  const data = sheet.getDataRange().getValues();
+  let emptyRow = -1;
+  
+  for (let i = 1; i < data.length; i++) {
+    if (!data[i][0] || data[i][0] === '') {
+      emptyRow = i + 1;
+      break;
+    }
+  }
+  
+  if (emptyRow === -1) {
+    emptyRow = data.length + 1;
+  }
+  
+  Logger.log(`Fila para prueba: ${emptyRow}`);
+  
+  // Llenar datos en la hoja
+  sheet.getRange(emptyRow, 1).setValue(testUser.name);
+  sheet.getRange(emptyRow, 2).setValue(testUser.email);
+  sheet.getRange(emptyRow, 3).setValue(testUser.role);
+  sheet.getRange(emptyRow, 4).setValue(testUser.group);
+  sheet.getRange(emptyRow, 5).setValue('TRUE');
+  
+  Logger.log('✓ Datos escritos en la hoja');
+  
+  // Esperar un momento
+  Utilities.sleep(1000);
+  
+  // Ejecutar processNewUser manualmente
+  try {
+    Logger.log('Ejecutando processNewUser...');
+    processNewUser(testUser, emptyRow);
+    Logger.log('✓ processNewUser ejecutado');
+  } catch (error) {
+    Logger.log('❌ Error en processNewUser: ' + error.message);
+    Logger.log(error.stack);
+  }
+  
+  Logger.log('=== VERIFICAR: ===');
+  Logger.log('1. ✓ Fechas en columnas F y G');
+  Logger.log('2. ✓ Email HTML recibido');
+  Logger.log('3. ✓ Evento en Calendar (mañana 10 AM)');
+  Logger.log('4. ✓ Fila en RegistroEventos');
+  Logger.log('=== FIN DE PRUEBA ===');
+}
+
+/**
+ * PRUEBA 5: Verifica configuración del sistema.
+ */
+function pruebaConfiguracion() {
+  Logger.log('=== PRUEBA: Configuración ===');
+  
+  const config = getConfig();
+  Logger.log('Configuración actual:');
+  Logger.log(JSON.stringify(config, null, 2));
+  
+  const users = getUsers();
+  Logger.log(`Total usuarios: ${users.length}`);
+  Logger.log(`Usuarios activos: ${users.filter(u => u.active).length}`);
+  
+  Logger.log('✓ Prueba completada');
+}

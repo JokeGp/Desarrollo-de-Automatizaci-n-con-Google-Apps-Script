@@ -1,49 +1,50 @@
-Objetivos:
+🧠 Automatización en Google Workspace con Apps Script
+🎯 Objetivos
+Comprobar la capacidad para automatizar procesos y gestionar recursos dentro del ecosistema de Google Workspace.
 
+Evaluar habilidades en el desarrollo de scripts con Google Apps Script y la integración de servicios colaborativos como Sheets, Gmail, Calendar y Groups.
 
-● Comprobar la capacidad para automatizar procesos y gestionar
-recursos dentro del ecosistema de Google Workspace.
+🛠️ Tareas Detalladas
+1. Simulación y Configuración del Entorno de Workspace
+Simular la creación de un entorno de Google Workspace (entorno de pruebas o cuentas de demostración).
 
+Configurar grupos de usuarios, asignar roles y establecer políticas básicas de seguridad y permisos.
 
-● Evaluar habilidades en el desarrollo de scripts con Google Apps Script y
-la integración de diferentes servicios colaborativos.
-Tareas Detalladas:
+2. Desarrollo de Automatización con Google Apps Script
+Desarrollar un script avanzado que cumpla las siguientes funciones:
 
+🔗 Integración con Google Sheets
+Lectura de datos.
 
-1. Simulación y Configuración del Entorno de Workspace:
-○ Simular la creación de un entorno de Google Workspace (en un
-entorno de pruebas o mediante cuentas de demostración).
-○ Configurar grupos de usuarios, asignación de roles y
-establecimiento de políticas básicas de seguridad y permisos.
+Cálculos automáticos.
 
+Actualización de registros.
 
-2. Desarrollo de Automatización con Google Apps Script:
-○ Crear un script avanzado en Google Apps Script que realice las
-siguientes funciones:
+📣 Automatización de Notificaciones
+Envío de correos electrónicos (Gmail).
 
-■ Integración con Google Sheets: Leer datos, realizar cálculos
-y actualizar registros.
+Envío de mensajes a Google Chat ante eventos específicos en Sheets.
 
-■ Automatización de Notificaciones: Enviar correos
-electrónicos (usando Gmail) o mensajes a Google Chat
-cuando se detecten eventos específicos en la hoja de
-cálculo.
+📅 Integración con Google Calendar
+Creación automática de eventos según datos ingresados en Sheets.
 
-■ Integración con Google Calendar: Crear eventos
-automáticamente en función de los datos ingresados en
-Google Sheets o en respuesta a cambios en la
-configuración del entorno.
+Respuesta a cambios en la configuración del entorno.
 
-○ Configurar activadores (triggers) que ejecuten el script en función
-de eventos (por ejemplo, edición de hoja, tiempo programado).
+⏱️ Configuración de Activadores (Triggers)
+Ejecución del script por edición de hoja.
 
-3. Validación y Documentación:
-○ Realizar pruebas de funcionamiento del script mediante la
-simulación de eventos (por ejemplo, añadir nuevas filas en la hoja
-de cálculo).
-○ Documentar el código de forma exhaustiva:
-■ Incluir comentarios que expliquen la lógica y el flujo de
-ejecución.
-■ Elaborar un informe técnico detallado que describa la
-integración de las distintas APIs de Google Workspace, las
-decisiones tomadas y posibles escenarios de fallo.
+Ejecución programada por tiempo.
+
+3. Validación y Documentación
+Simulación de eventos para pruebas (ej. añadir nuevas filas en Sheets).
+
+Documentación exhaustiva del código:
+
+Comentarios explicativos sobre lógica y flujo de ejecución.
+
+Informe técnico detallado:
+
+Integración de APIs de Google Workspace.
+
+Decisiones de diseño.
+

@@ -1,20 +1,29 @@
 Objetivos:
+
+
 ● Comprobar la capacidad para automatizar procesos y gestionar
 recursos dentro del ecosistema de Google Workspace.
+
+
 ● Evaluar habilidades en el desarrollo de scripts con Google Apps Script y
 la integración de diferentes servicios colaborativos.
 Tareas Detalladas:
+
+
 1. Simulación y Configuración del Entorno de Workspace:
 ○ Simular la creación de un entorno de Google Workspace (en un
 entorno de pruebas o mediante cuentas de demostración).
 ○ Configurar grupos de usuarios, asignación de roles y
 establecimiento de políticas básicas de seguridad y permisos.
 
+
 2. Desarrollo de Automatización con Google Apps Script:
 ○ Crear un script avanzado en Google Apps Script que realice las
 siguientes funciones:
+
 ■ Integración con Google Sheets: Leer datos, realizar cálculos
 y actualizar registros.
+
 ■ Automatización de Notificaciones: Enviar correos
 electrónicos (usando Gmail) o mensajes a Google Chat
 cuando se detecten eventos específicos en la hoja de
